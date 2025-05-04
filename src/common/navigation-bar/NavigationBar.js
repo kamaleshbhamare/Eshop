@@ -71,44 +71,29 @@ export const NavigationBar = ({ token }) => {
                     <SearchIconWrapper>
                         <SearchIcon />
                     </SearchIconWrapper>
-                    <StyledInputBase
-                        placeholder="Search…"
-                        inputProps={{ "aria-label": "search" }}
-                    />
+                    <StyledInputBase placeholder="Search…" inputProps={{ "aria-label": "search" }} />
                 </Search>}
                 <Box display="flex" justifyContent="space-between" p={2}>
-                    <Button
-                        variant="text"
-                        color="inherit"
-                        sx={{
-                            textTransform: "none",
-                            textDecoration: "underline",
-                            "&:hover": {
-                                textDecoration: "underline",
-                            },
-                        }}
-                    >
-                        Home
-                    </Button>
-                    <Button
-                        variant="text"
-                        color="inherit"
-                        sx={{
-                            textTransform: "none",
-                            textDecoration: "underline",
-                            "&:hover": {
-                                textDecoration: "underline",
-                            },
-                        }}
-                    >
-                        Add Product
-                    </Button>
-                    {!isLoggedIn && <Button variant="contained" color="secondary" onClick={handleLogin}>
-                        Login
-                    </Button>}
-                    {isLoggedIn && <Button variant="contained" color="secondary" onClick={handleLogout}>
-                        Logout
-                    </Button>
+                    {
+                        isLoggedIn && <Button variant="text" color="inherit" sx={{ textTransform: "none", textDecoration: "underline", "&:hover": { textDecoration: "underline", }, }} >
+                            Home
+                        </Button>
+                    }
+                    {
+                        isLoggedIn &&
+                        <Button variant="text" color="inherit" sx={{ textTransform: "none", textDecoration: "underline", "&:hover": { textDecoration: "underline", }, }} >
+                            Add Product
+                        </Button>
+                    }
+                    {
+                        !isLoggedIn && <Button variant="contained" color="secondary" onClick={handleLogin}>
+                            Login
+                        </Button>
+                    }
+                    {
+                        isLoggedIn && <Button variant="contained" color="secondary" onClick={handleLogout}>
+                            Logout
+                        </Button>
                     }
                 </Box>
             </Toolbar>
