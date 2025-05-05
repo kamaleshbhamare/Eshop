@@ -49,11 +49,11 @@ const SignUp = () => {
                 });
 
                 if (!response.ok) {
-                    throw new Error('Sign up failed. Please try again!');
                     setSuccess(false);
+                    throw new Error('Sign up failed. Please try again!');
                 }
 
-                const data = await response.json();
+                // const data = await response.json();
                 // console.log(data);
                 setSuccess(true);
 

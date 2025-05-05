@@ -2,8 +2,9 @@ import { AppBar, Button, Toolbar, Box, InputBase } from "@mui/material";
 import { styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { useEffect } from "react";
 
 const Search = styled("div")(({ theme }) => ({
     position: "relative",
@@ -45,19 +46,18 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     },
 }));
 
-
-export const NavigationBar = ({ token }) => {
+export const NavigationBar = () => {
     const Navigate = useNavigate();
-    const [isLoggedIn, setIsLoggedIn] = useState(!!token);
+    const { isLoggedIn, logout } = useAuth();
 
     const handleLogin = () => {
         Navigate('/login'); // Redirect to login page
     }
 
     const handleLogout = () => {
-        localStorage.removeItem('token'); // Clear token
+        // localStorage.removeItem('token'); // Clear token
+        logout(); // Update context state
         Navigate('/login'); // Redirect to login page
-        setIsLoggedIn(false); // Update state
     }
 
     return (
@@ -68,9 +68,7 @@ export const NavigationBar = ({ token }) => {
                     <span className="logo-text">upGrad E-Shop</span>
                 </Box>
                 {isLoggedIn && <Search>
-                    <SearchIconWrapper>
-                        <SearchIcon />
-                    </SearchIconWrapper>
+                    <SearchIconWrapper> <SearchIcon /> </SearchIconWrapper>
                     <StyledInputBase placeholder="Search…" inputProps={{ "aria-label": "search" }} />
                 </Search>}
                 <Box display="flex" justifyContent="space-between" p={2}>

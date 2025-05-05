@@ -2,16 +2,21 @@ import React, { useState } from 'react';
 import { Alert, Box, Button, TextField, Typography } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
-export default function Login({ token }) {
+export default function Login() {
 
     const [formData, setFormData] = useState({ username: '', password: '' });
 
     const [errors, setErrors] = useState({});
     const [apiError, setApiError] = useState("");
 
+    // Getting login function from AuthContext
+    const { login } = useAuth();
+
     const navigate = useNavigate();
 
+    // Validate the form data before sending it to the server
     const validate = () => {
         let tempErrors = {};
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -23,11 +28,13 @@ export default function Login({ token }) {
         return Object.keys(tempErrors).length === 0;
     };
 
+    // Handle input changes
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // Handle login
     const handleLogin = async () => {
         if (!validate()) {
             setApiError("Please fix the errors in the form.");
@@ -41,21 +48,37 @@ export default function Login({ token }) {
                 body: JSON.stringify(formData),
             });
 
-            if (!response.ok) {
+            const data = await response.json();
+            // console.log(data);
+
+            if (response.ok) {
+                login({
+                    userData: {
+                        id: data.id,
+                        email: data.email,
+                        role: data.roles[0]
+                    },
+                    token: data.token
+                });
+            } else {
+                setApiError("Something went wrong. Please try again.");
                 throw new Error('Login failed');
             }
 
-            const data = await response.json();
-            console.log(data);
+            // updateLoginDetails(true);
+            // handleRoleChange(data.roles[0]);
             // localStorage.setItem('token', data.token);
-            // Setting token manually. This is the work around as per the set up document.
-            localStorage.setItem('token', "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbkBkZW1vLmNvbSIsImlhdCI6MTc0NDgwMTE3MSwiZXhwIjoxNzQ0ODA5NTcxfQ.x2qwnCYlRPFGaNQftM3yFG1bQf2kGCoBIhWt_gJYBGJZbwCv1rlWMJpbzv0wEQXsSQSJLrH1ugqUvdEe3vo8iA");
 
+            // Setting token manually. This is the work around as per the set up document.
+            // localStorage.setItem('token', "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbkBkZW1vLmNvbSIsImlhdCI6MTc0NDgwMTE3MSwiZXhwIjoxNzQ0ODA5NTcxfQ.x2qwnCYlRPFGaNQftM3yFG1bQf2kGCoBIhWt_gJYBGJZbwCv1rlWMJpbzv0wEQXsSQSJLrH1ugqUvdEe3vo8iA");
+
+            // Redirect to products page after successful login
             navigate('/products');
-            window.location.reload();
 
         } catch (error) {
-            alert('Login failed. Please check your credentials.');
+            // alert('Login failed. Please check your credentials.');
+            setApiError("Something went wrong. Please try again.");
+            console.error('Error:', error);
         }
     };
 
