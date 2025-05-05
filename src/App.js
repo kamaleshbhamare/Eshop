@@ -13,7 +13,7 @@ function App() {
   // const [role, setRole] = useState('');
   // const [token, setToken] = useState(localStorage.getItem('token') || ''); // Initialize token from localStorage
 
-  const { user, token, isLoggedIn } = useAuth();
+  const { token } = useAuth();
 
   return (
     <div className="App">
