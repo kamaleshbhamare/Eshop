@@ -5,6 +5,8 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
+import './NavigationBar.css';
+
 const Search = styled("div")(({ theme }) => ({
     position: "relative",
     borderRadius: theme.shape.borderRadius,
@@ -45,42 +47,43 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     },
 }));
 
-export const NavigationBar = () => {
-    const Navigate = useNavigate();
-    const { isLoggedIn, logout } = useAuth();
+export const NavigationBar = ({ setSearchTerm }) => {
+    const navigate = useNavigate();
+    const { isLoggedIn, logout, user } = useAuth();
 
     const handleLogin = () => {
-        Navigate('/login'); // Redirect to login page
+        navigate('/login'); // Redirect to login page
     }
 
     const handleLogout = () => {
         // localStorage.removeItem('token'); // Clear token
         logout(); // Update context state
-        Navigate('/login'); // Redirect to login page
+        navigate('/login'); // Redirect to login page
     }
 
     return (
-        <AppBar position="static" sx={{ backgroundColor: "#3f51b5" }}>
+        <AppBar position="static" sx={{ backgroundColor: "primary" }}>
             <Toolbar sx={{ justifyContent: "space-between" }}>
-                <Box display="flex" alignItems="center" gap={1}>
+                <Box display="flex" alignItems="center" gap={1} onClick={() => navigate("/products")} sx={{ cursor: "pointer" }}>
                     <ShoppingCartIcon />
                     <span className="logo-text">upGrad E-Shop</span>
                 </Box>
-                {isLoggedIn && <Search>
+                {isLoggedIn && <Search sx={{ display: { xs: "none", md: "flex", minWidth: 400 } }}>
                     <SearchIconWrapper> <SearchIcon /> </SearchIconWrapper>
-                    <StyledInputBase placeholder="Search…" inputProps={{ "aria-label": "search" }} />
+                    <StyledInputBase placeholder="Search…" inputProps={{ "aria-label": "search" }} onChange={(event) => { setSearchTerm(event.target.value) }} />
                 </Search>}
-                <Box display="flex" justifyContent="space-between" p={2}>
-                    {
-                        isLoggedIn && <Button variant="text" color="inherit" sx={{ textTransform: "none", textDecoration: "underline", "&:hover": { textDecoration: "underline", }, }} >
-                            Home
-                        </Button>
-                    }
+                <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
                     {
                         isLoggedIn &&
-                        <Button variant="text" color="inherit" sx={{ textTransform: "none", textDecoration: "underline", "&:hover": { textDecoration: "underline", }, }} >
+                        <a href="#" className="nav_link" onClick={() => navigate("/products")} >
+                            Home
+                        </a>
+                    }
+                    {
+                        isLoggedIn && user?.role === "ADMIN" &&
+                        <a href="#" className="nav_link" onClick={() => navigate("/products")} >
                             Add Product
-                        </Button>
+                        </a>
                     }
                     {
                         !isLoggedIn && <Button variant="contained" color="secondary" onClick={handleLogin}>
@@ -97,3 +100,5 @@ export const NavigationBar = () => {
         </AppBar>
     );
 };
+
+export default NavigationBar;

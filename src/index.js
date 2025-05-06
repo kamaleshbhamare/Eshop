@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import theme from './common/theme/them';
+import theme from './common/theme/theme';
 import { ThemeProvider } from '@mui/material/styles';
 import { AuthProvider } from './context/AuthContext';
 

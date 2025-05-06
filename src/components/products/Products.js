@@ -2,9 +2,10 @@ import { Delete, Edit } from "@mui/icons-material";
 import { Box, Button, Card, CardMedia, Container, MenuItem, Select, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
-const Products = () => {
-
+const Products = ({ searchTerm, setSelectedCategoryRoot }) => {
+    const navigate = useNavigate();
     const { user, isLoggedIn } = useAuth();
 
     const [defaultProducts, setDefaultProducts] = useState([]);
@@ -14,7 +15,7 @@ const Products = () => {
     const [error, setError] = useState(null);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [selectedSortOption, setSelectedSortOption] = useState('default');
+    const [selectedSortOption, setSelectedSortOption] = useState();
 
     const sortOptions = [
         { value: 'default', label: 'Default' },
@@ -25,6 +26,7 @@ const Products = () => {
 
     // Fetch products and categories from the API
     useEffect(() => {
+        // Fetch products from the API        
         fetch('https://dev-project-ecommerce.upgrad.dev/api/products')
             .then(response => {
                 if (!response.ok) {
@@ -86,9 +88,16 @@ const Products = () => {
             return 0;
         });
 
+        // Filter products based on search term
+        if (searchTerm) {
+            updatedProducts = updatedProducts.filter(product =>
+                product.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
         setMyProducts(updatedProducts);
 
-    }, [selectedSortOption, selectedCategory, defaultProducts]);
+    }, [selectedSortOption, selectedCategory, defaultProducts, searchTerm]);
 
     // Handle sort option change
     const handleSort = (event) => {
@@ -103,21 +112,16 @@ const Products = () => {
         return <p>{error}</p>;
     }
 
+    if (!isLoggedIn) {
+        navigate('/login'); // Redirect to login page if not logged in
+        return null; // Prevent rendering the component
+    }
+
     return (
         <div>
-            <Container maxWidth="lg" sx={{ display: 'flex', py: 2, justifyContent: 'center' }}>
+            <Container maxWidth="lg" sx={{ display: 'flex', pt: 3, justifyContent: 'center' }}>
                 <Box sx={{ display: 'flex', alignSelf: 'center' }} >
-                    <ToggleButtonGroup
-                        value={selectedCategory}
-                        exclusive
-                        onChange={(event, newCategory) => {
-                            if (newCategory !== null) {
-                                setSelectedCategory(newCategory);
-                            }
-                        }}
-                        aria-label="Category"
-                        sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}
-                    >
+                    <ToggleButtonGroup value={selectedCategory} exclusive onChange={(event, newCategory) => { if (newCategory !== null) { setSelectedCategory(newCategory); setSelectedCategoryRoot(newCategory); } }} aria-label="Category" sx={{ mb: 2, display: 'flex', justifyContent: 'center' }} >
                         <ToggleButton value="All" aria-label="All" >
                             All
                         </ToggleButton>
@@ -129,11 +133,11 @@ const Products = () => {
                     </ToggleButtonGroup>
                 </Box>
             </Container>
-            <Container maxWidth="lg" sx={{ py: 2, pl: 4, display: 'flex', justifyContent: 'flex-start', border: '1px solid #ccc', }} >
-                <Typography sx={{ textAlign: 'center' }}>
+            <Container maxWidth="xl" sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', }} >
+                <Typography>
                     Sort By:
                 </Typography>
-                <Select value={selectedSortOption} onChange={handleSort} sx={{ ml: 2, minWidth: 120 }}>
+                <Select value={selectedSortOption} onChange={handleSort} sx={{ minWidth: 230, textAlign: 'left' }} defaultValue="default" >
                     {sortOptions.map((option) => (
                         <MenuItem key={option.value} value={option.value}>
                             {option.label}
@@ -141,7 +145,7 @@ const Products = () => {
                     ))}
                 </Select>
             </Container>
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 4, p: 8, }} >
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 4, p: 4, }} >
                 {myproducts.filter(product => selectedCategory === 'All' || product.category === selectedCategory).map((product) => (
                     // {myproducts.map((product) => (
                     <Card key={product.id} sx={{ minWidth: 275, p: 2, position: 'relative', display: 'flex', flexDirection: 'column', height: 480, }} >
@@ -159,7 +163,7 @@ const Products = () => {
                         {/* Bottom-aligned button row */}
                         <Box sx={{ position: 'absolute', bottom: 16, left: 16, right: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', }} >
                             {/* Buy button aligned left */}
-                            <Button variant="contained" color="primary" onClick={() => alert(`Added ${product.name} to cart`)} >
+                            <Button variant="contained" color="primary" onClick={() => navigate("/products/" + product.id)} >
                                 Buy
                             </Button>
 
