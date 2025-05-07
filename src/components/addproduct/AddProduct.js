@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { TextField, Button, Typography, Box, Snackbar, Alert, MenuItem } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const AddProduct = () => {
     const { token } = useAuth();
+    const navigate = useNavigate();
 
     const [product, setProduct] = useState({
         name: "",
@@ -48,8 +50,6 @@ const AddProduct = () => {
     };
 
     const handleSubmit = async () => {
-
-
         const apiUrl = 'https://dev-project-ecommerce.upgrad.dev/api/products';
 
         try {
@@ -67,12 +67,17 @@ const AddProduct = () => {
                 console.log('Product added successfully:', data);
                 alert('Product added successfully!');
                 setProduct({
-                    name: '',
-                    price: '',
-                    description: '',
-                    category: '',
-                    stock: '',
+                    name: "",
+                    category: "",
+                    manufacturer: "",
+                    availableItems: "",
+                    price: "",
+                    imageUrl: "",
+                    description: "",
                 });
+                setTimeout(() => {
+                    navigate("/products");
+                }, 2000);
             } else {
                 const errorData = await response.json();
                 console.error('Error adding product:', errorData);

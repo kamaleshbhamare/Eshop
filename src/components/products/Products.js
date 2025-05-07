@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 const Products = ({ searchTerm, setSelectedCategoryRoot }) => {
     const navigate = useNavigate();
-    const { user, isLoggedIn } = useAuth();
+    const { user, isLoggedIn, token } = useAuth();
 
     const [defaultProducts, setDefaultProducts] = useState([]);
     const [myproducts, setMyProducts] = useState([]);
@@ -109,6 +109,30 @@ const Products = ({ searchTerm, setSelectedCategoryRoot }) => {
         navigate(`/updateproduct/${productId}`);
     };
 
+    const handleDeleteProduct = (productId) => {
+        if (window.confirm("Are you sure you want to delete this product?")) {
+            fetch(`https://dev-project-ecommerce.upgrad.dev/api/products/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'x-auth-token': token,
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to delete product');
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    setMyProducts(myproducts.filter(product => product.id !== productId));
+                })
+                .catch(error => {
+                    setError(error.message);
+                });
+        }
+    }
+
     if (loading) {
         return <p>Loading...</p>;
     }
@@ -175,7 +199,7 @@ const Products = ({ searchTerm, setSelectedCategoryRoot }) => {
                             {isLoggedIn && user?.role === "ADMIN" && (
                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                     <Edit color="action" sx={{ cursor: 'pointer' }} onClick={() => handleEditProduct(product.id)} />
-                                    <Delete color="action" sx={{ cursor: 'pointer' }} onClick={() => alert(`Delete ${product.name}`)} />
+                                    <Delete color="action" sx={{ cursor: 'pointer' }} onClick={() => handleDeleteProduct(product.id)} />
                                 </Box>
                             )}
                         </Box>
