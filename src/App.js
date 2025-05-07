@@ -10,6 +10,8 @@ import SignUp from './components/signup/SignUp';
 import ProductDetails from './components/productdetails/ProductDetails';
 import CreateOrder from './components/createorder/CreateOrder';
 import { useAuth } from './context/AuthContext';
+import AddProduct from './components/addproduct/AddProduct.js';
+import UpdateProduct from './components/updateproduct/UpdateProduct.js';
 
 function App() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,6 +29,9 @@ function App() {
           <Route path="/products" element={<Products searchTerm={searchTerm} setSelectedCategoryRoot={setSelectedCategoryRoot} />} />
           <Route path='/products/:id' element={<ProductDetails selectedCategory={selectedCategory} />} />
           <Route path='/createorder' element={<CreateOrder />} />
+          <Route path='/addproduct' element={<AddProduct />} />
+          <Route path='/updateproduct/:id' element={<UpdateProduct />} />
+          <Route path='/addproduct' element={<AddProduct />} />
         </Routes>
       </Router>
     </div>

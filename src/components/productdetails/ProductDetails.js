@@ -20,7 +20,6 @@ export default function ProductDetails({ selectedCategory }) {
 
     // Fetch product details from the API using id
     useEffect(() => {
-        console.log("Fetching product details...");
         fetch(`https://dev-project-ecommerce.upgrad.dev/api/products/${id}`)
             .then(response => {
                 if (!response.ok) {

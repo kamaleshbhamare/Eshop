@@ -105,6 +105,10 @@ const Products = ({ searchTerm, setSelectedCategoryRoot }) => {
         setSelectedSortOption(value);
     };
 
+    const handleEditProduct = (productId) => {
+        navigate(`/updateproduct/${productId}`);
+    };
+
     if (loading) {
         return <p>Loading...</p>;
     }
@@ -170,7 +174,7 @@ const Products = ({ searchTerm, setSelectedCategoryRoot }) => {
                             {/* Admin controls aligned right */}
                             {isLoggedIn && user?.role === "ADMIN" && (
                                 <Box sx={{ display: 'flex', gap: 1 }}>
-                                    <Edit color="action" sx={{ cursor: 'pointer' }} onClick={() => alert(`Edit ${product.name}`)} />
+                                    <Edit color="action" sx={{ cursor: 'pointer' }} onClick={() => handleEditProduct(product.id)} />
                                     <Delete color="action" sx={{ cursor: 'pointer' }} onClick={() => alert(`Delete ${product.name}`)} />
                                 </Box>
                             )}

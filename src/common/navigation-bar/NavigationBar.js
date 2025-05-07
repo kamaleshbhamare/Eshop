@@ -81,7 +81,7 @@ export const NavigationBar = ({ setSearchTerm }) => {
                     }
                     {
                         isLoggedIn && user?.role === "ADMIN" &&
-                        <a href="#" className="nav_link" onClick={() => navigate("/products")} >
+                        <a href="#" className="nav_link" onClick={() => navigate("/addproduct")} >
                             Add Product
                         </a>
                     }

@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("user", JSON.stringify(userData));
         // localStorage.setItem("token", token);
         // Setting token manually. This is the work around as per the set up document.
-        localStorage.setItem('token', "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyQGRlbW8uY29tIiwiaWF0IjoxNzQ2NjA0MDk1LCJleHAiOjE3NDY2MTI0OTV9.BzMbNjUqcTGus6cDg8z9HgJg649BieRx-ilfqcBhVpnfvNr3rD5F0gELApguieoapU_J1RNCOLwqcDTaKbeIPw");
+        localStorage.setItem('token', "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbkBkZW1vLmNvbSIsImlhdCI6MTc0NjYxNTAyMCwiZXhwIjoxNzQ2NjIzNDIwfQ.0EpVEZbgAYzKWlC608mLgeZBeT27dLsO8HYvqnpDogMm0UXqK2J6Ns1HcKsK2GMSBSDd_Jt6UtQ6MCG_jJ7ijg");
     };
 
     const logout = () => {
