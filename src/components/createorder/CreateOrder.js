@@ -1,6 +1,6 @@
-import { Box, Step, Stepper, StepLabel, CircularProgress, Button, Typography, Paper, FormControl, InputLabel, Select, MenuItem, Input, TextField, } from "@mui/material";
+import { Box, Step, Stepper, StepLabel, CircularProgress, Button, Typography, Paper, FormControl, InputLabel, Select, MenuItem, Input, TextField, Alert, Snackbar, } from "@mui/material";
 import { useEffect, useState } from "react";
-import { Form, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 export default function CreateOrder({ selectedCategory }) {
@@ -9,9 +9,21 @@ export default function CreateOrder({ selectedCategory }) {
     const location = useLocation();
     const [isLoading, setIsLoading] = useState(true);
 
+    const [selectedAddressId, setSelectedAddressId] = useState('');
     const { productId, quantity } = location.state || { productId: null, quantity: 1 };
     const [product, setProduct] = useState(null);
     const [addresses, setAddresses] = useState([]);
+    const [showSelectAddressMessage, setShowSelectAddressMessage] = useState(false);
+    const [showOrderPlacedMessage, setShowOrderPlacedMessage] = useState(false);
+    const [newAddress, setNewAddress] = useState({
+        name: '',
+        contactNumber: '',
+        street: '',
+        city: '',
+        state: '',
+        landmark: '',
+        zipcode: '',
+    });
 
     const steps = [
         'Items',
@@ -26,16 +38,56 @@ export default function CreateOrder({ selectedCategory }) {
     }
 
     const handleNext = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        if (activeStep === 1 && !selectedAddressId) {
+            setShowSelectAddressMessage(true);
+        } if (activeStep === steps.length - 1) {
+            handleOrder();
+        } else {
+            setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        }
     }
 
     const handleOrder = () => {
         // Handle order placement logic here
-        console.log(`Order placed for ${quantity} of product ID: ${productId}`);
+        setShowOrderPlacedMessage(true);
     }
+
+    const handleNewAddressChange = (event) => {
+        const { name, value } = event.target;
+        setNewAddress((prevAddress) => ({
+            ...prevAddress,
+            [name]: value,
+        }));
+    }
+
+    const validateNewAddress = () => {
+        const { name, contactNumber, street, city, state, landmark, zipcode } = newAddress;
+        if (!name || !contactNumber || !street || !city || !state || !landmark || !zipcode) {
+            alert("Please fill in all fields");
+            return false;
+        }
+        if (contactNumber.length !== 10) {
+            alert("Contact number must be 10 digits");
+            return false;
+        }
+        if (zipcode.length !== 6) {
+            alert("Zip code must be 6 digits");
+            return false;
+        }
+        return true;
+    }
+
     const handdleSaveAddress = (event) => {
         event.preventDefault();
+
         const formData = new FormData(event.currentTarget);
+        console.log("Before validation: ", formData.get('name'), formData.get('contactNumber'), formData.get('street'), formData.get('city'), formData.get('state'), formData.get('landmark'), formData.get('zipcode'));
+        const isValid = validateNewAddress();
+        console.log("isValid " + isValid);
+        if (!isValid) {
+            return;
+        }
+        console.log("Saving address...");
         const addressData = {
             name: formData.get('name'),
             contactNumber: formData.get('contactNumber'),
@@ -43,7 +95,7 @@ export default function CreateOrder({ selectedCategory }) {
             city: formData.get('city'),
             state: formData.get('state'),
             landmark: formData.get('landmark'),
-            zipcode: formData.get('zipCode'),
+            zipcode: formData.get('zipcode'),
         };
         console.log("Address data: ", addressData);
         // Save address data to the API using token
@@ -71,6 +123,12 @@ export default function CreateOrder({ selectedCategory }) {
             });
     }
 
+    const handleSelectAddressId = (event) => {
+        const selectedId = event.target.value;
+        setSelectedAddressId(selectedId);
+        console.log("Selected address ID: ", selectedId);
+    }
+
     // Fetch product details from the API using productId
     useEffect(() => {
         if (!productId) {
@@ -96,7 +154,7 @@ export default function CreateOrder({ selectedCategory }) {
 
     // Fetch all addresses from the API with token
     useEffect(() => {
-        console.log("Fetting addresses... with token: ", token);
+        console.log("Fetching addresses... with token: ", token);
         fetch('https://dev-project-ecommerce.upgrad.dev/api/addresses', {
             method: 'GET',
             headers: {
@@ -113,7 +171,8 @@ export default function CreateOrder({ selectedCategory }) {
                 console.log(data);
                 // Filter addresses based on user ID
                 // console.log("user.id " + user.id);
-                const filteredAddresses = data.filter(address => address.userId === user.id);
+                const filteredAddresses = data.filter(address => address.user === user.id);
+                // const filteredAddresses = data;
                 setAddresses(filteredAddresses);
             })
             .catch(error => {
@@ -128,7 +187,6 @@ export default function CreateOrder({ selectedCategory }) {
             case 0:
                 return (
                     <Paper elevation={3} sx={{ padding: 2, display: 'flex', flexDirection: 'row', gap: 2 }}>
-
                         <Box sx={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
                             <Typography variant="h4">{product.name}</Typography>
                             <Typography variant="subtitle1"  >Quantity: <b>{quantity}</b></Typography>
@@ -145,19 +203,13 @@ export default function CreateOrder({ selectedCategory }) {
                         {addresses.length > 0 ? (
                             <FormControl fullWidth>
 
-                                <Select labelId="address-select-label" id="address-select" value="" onChange={() => { }}>
+                                <Select value={selectedAddressId} onChange={handleSelectAddressId} displayEmpty>
                                     {addresses.map((address) => (
                                         <MenuItem key={address.id} value={address.id}>
-                                            <Typography variant="body2" color="textSecondary">
+                                            <Typography variant="body2" color="textSecondary" textAlign={'left'}>
                                                 {address.name},
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary">
                                                 {address.street}
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary">
                                                 {address.pincode},
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary">
                                                 {address.landmark},
                                                 {address.city}
                                             </Typography>
@@ -172,15 +224,15 @@ export default function CreateOrder({ selectedCategory }) {
                         <Typography variant="body1" color="textSecondary">
                             Add Address
                         </Typography>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} component={Form} noValidate autoComplete="off" onSubmit={handdleSaveAddress}>
-                            <TextField label="Name" variant="outlined" />
-                            <TextField label="Contact Number" variant="outlined" />
-                            <TextField label="Street" variant="outlined" />
-                            <TextField label="City" variant="outlined" />
-                            <TextField label="State" variant="outlined" />
-                            <TextField label="Landmark" variant="outlined" />
-                            <TextField label="Zip Code" variant="outlined" />
-                            <Button variant="contained" color="primary" onClick={handdleSaveAddress} sx={{ marginTop: 2 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} component="form" onSubmit={handdleSaveAddress}>
+                            <TextField name="name" label="Name" value={newAddress.name} onChange={handleNewAddressChange} />
+                            <TextField name="contactNumber" label="Contact Number" value={newAddress.contactNumber} onChange={handleNewAddressChange} />
+                            <TextField name="street" label="Street" value={newAddress.street} onChange={handleNewAddressChange} />
+                            <TextField name="city" label="City" value={newAddress.city} onChange={handleNewAddressChange} />
+                            <TextField name="state" label="State" value={newAddress.state} onChange={handleNewAddressChange} />
+                            <TextField name="landmark" label="Landmark" value={newAddress.landmark} onChange={handleNewAddressChange} />
+                            <TextField name="zipcode" label="Zip Code" value={newAddress.zipcode} onChange={handleNewAddressChange} />
+                            <Button type="submit" variant="contained" color="primary" sx={{ marginTop: 2 }}>
                                 Save Address
                             </Button>
                         </Box>
@@ -189,7 +241,48 @@ export default function CreateOrder({ selectedCategory }) {
 
                 );
             case 2:
-                return <p>Confirm Order</p>;
+                return (
+                    <Paper elevation={3} sx={{ padding: 2, display: 'flex', flexDirection: 'row', gap: 2 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', textAlign: 'left', padding: 2, flexBasis: '50%' }}>
+                            <Typography variant="h4">{product.name}</Typography>
+
+                            <Typography variant="subtitle1"  >Quantity: <b>{quantity}</b></Typography>
+                            <Typography variant="subtitle1"  >Category: <b>{product.category}</b></Typography>
+                            <Typography variant="body1" sx={{ textAlign: 'justify', fontStyle: 'italic' }}>{product.description}</Typography>
+
+                            <Typography variant="h5" color="secondary">Total: ₹{product.price * quantity}</Typography>
+
+                        </Box>
+
+                        <Box sx={{ display: 'flex', flexDirection: 'column', textAlign: 'left', padding: 2, flexBasis: '50%' }}>
+                            <Typography variant="h4" >Address Details:</Typography>
+                            {addresses.map((address) => {
+                                if (address.id === selectedAddressId) {
+                                    return (
+                                        <>
+                                            <Typography key={address.id} variant="body2" color="textSecondary" textAlign={'left'}>
+                                                {address.name}
+                                            </Typography>
+                                            <Typography key={address.id} variant="body2" color="textSecondary" textAlign={'left'}>
+                                                {address.street}
+                                            </Typography>
+                                            <Typography key={address.id} variant="body2" color="textSecondary" textAlign={'left'}>
+                                                {address.pincode},
+                                            </Typography>
+                                            <Typography key={address.id} variant="body2" color="textSecondary" textAlign={'left'}>
+                                                {address.landmark},
+                                            </Typography>
+                                            <Typography key={address.id} variant="body2" color="textSecondary" textAlign={'left'}>
+                                                {address.city}
+                                            </Typography>
+                                        </>
+                                    );
+                                }
+                                return null;
+                            })}
+                        </Box>
+                    </Paper>
+                );
             default:
                 return null;
         }
@@ -197,7 +290,21 @@ export default function CreateOrder({ selectedCategory }) {
 
     return (
         <Box sx={{ padding: 2 }}>
-            <Stepper activeStep={0} alternativeLabel>
+            {showSelectAddressMessage && (
+                <Snackbar open={showSelectAddressMessage} autoHideDuration={6000} onClose={() => { setShowSelectAddressMessage(false) }} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+                    <Alert onClose={() => { setShowSelectAddressMessage(false) }} severity="error" variant="filled" sx={{ width: '100%' }} >
+                        Please select an address to proceed.
+                    </Alert>
+                </Snackbar>
+            )}
+            {showOrderPlacedMessage && (
+                <Snackbar open={showOrderPlacedMessage} autoHideDuration={6000} onClose={() => { setShowOrderPlacedMessage(false) }} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+                    <Alert onClose={() => { setShowOrderPlacedMessage(false) }} severity="success" variant="filled" sx={{ width: '100%' }} >
+                        Order placed successfully!
+                    </Alert>
+                </Snackbar>
+            )}
+            <Stepper activeStep={activeStep} alternativeLabel>
                 {steps.map((label) => (
                     <Step key={label}>
                         <StepLabel>{label}</StepLabel>
